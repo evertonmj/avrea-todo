@@ -1,17 +1,25 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Tasks } from '../api/tasks.js';
+import ReactDOM from 'react-dom';
 import Task from './Task.jsx';
 
 //App component - represents the whole application
 class App extends Component {
-	/*getTasks() {
-		return [
-			{_id: 1, text: 'This is task 1'},
-			{_id: 2, text: 'This is task 2'},
-			{_id: 3, text: 'This is task 3'},
-		];
-	}*/
+	handleSubmit(event) {
+		event.preventDefault();
+		//find the text field via React ref
+		const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
+
+		//persist text
+		Tasks.insert({
+			text,
+			createdAt: new Date(),
+		});
+
+		//clear form
+		ReactDOM.findDOMNode(this.refs.textInput).value = '';
+	}
 
 	//get tasks and render
 	renderTasks() {
@@ -26,6 +34,10 @@ class App extends Component {
 			<div className="container">
 				<header>
 					<h1>Avrea Todo List</h1>
+
+					<form className="new-task" onSubmit={this.handleSubmit.bind(this)}>
+						<input type="text" ref="textInput" placeholder="Type to add new tasks" />
+					</form>
 				</header>
 
 				<ul>
@@ -42,6 +54,6 @@ App.propTypes = {
 
 export default createContainer(() => {
 	return {
-		tasks: Tasks.find({}).fetch(),
+		tasks: Tasks.find({}, {sort: { createdAt: -1}}).fetch(),
 	};
 }, App);
